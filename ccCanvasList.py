@@ -4,12 +4,8 @@ import time
 
 class CanvasList:
 	def __init__(
-		self,
-		items : int,
-		color : str,
-		mode : str,
-		canvas : tk.Canvas,
-		**kwargs : dict
+		self, items : int, color : str,
+		mode : str, canvas : tk.Canvas, **kwargs : dict
 	):
 		self.canvas = canvas
 		self.color = color
@@ -60,7 +56,7 @@ class CanvasList:
 		if a == b:
 			return
 
-		xA = self.xpos(a) 
+		xA = self.xpos(a)
 		xB = self.xpos(b)
 		distance = abs(xA - xB)
 
@@ -80,7 +76,7 @@ class CanvasList:
 		if op.upper() not in ("LEQ", "LES", "GRT", "GEQ", "EQL"):
 			print("Operation Error in CanvasList.compare: Bad Operation '" + op + "'")
 			return None
-		
+
 		if op.upper() == "EQL":
 			return self.value(a) == self.value(b)
 		# Note: The signs are reversed since a smaller y-coord means a taller rectangle
@@ -119,11 +115,8 @@ class CanvasList:
 				break
 
 	def partitionRightPivot(
-		self,
-		low : int,
-		high : int,
-		delay : float,
-		random : bool = False
+		self, low : int, high : int,
+		delay : float, random : bool
 	) -> int:
 		i = low # Mark the beginning the lesser partition
 
@@ -141,11 +134,8 @@ class CanvasList:
 		return i
 
 	def quickSort(
-		self,
-		low : int,
-		high : int,
-		delay : float = 0.050,
-		random : bool = False
+		self, low : int, high : int,
+		delay : float = 0.050,random : bool = False
 	):
 		if low < high:
 			p = self.partitionRightPivot(low, high, delay, random)
@@ -153,12 +143,8 @@ class CanvasList:
 			self.quickSort(p + 1, high, delay)
 
 	def mergeOver(
-		self,
-		baseL : int,
-		lenL : int, 
-		baseR : int,
-		lenR : int,
-		delay : float = 0.050
+		self, baseL : int, lenL : int,
+		baseR : int, lenR : int, delay : float
 	):
 		source = CanvasList(
 			len(self.array),
@@ -175,7 +161,9 @@ class CanvasList:
 		for i in range(baseL, baseL + lenL + lenR):
 		#	print("\t", end = '')
 		#	print(i, sourceL, sourceR)
-			if sourceR == lenL + lenR or (sourceL < lenL and source.compare(sourceL, sourceR, "les")):
+			if sourceR == lenL + lenR or ( \
+				sourceL < lenL and source.compare(sourceL, sourceR, "les") \
+			):
 				self.copyOver(i, source, sourceL)
 				sourceL += 1
 			else:
@@ -184,13 +172,8 @@ class CanvasList:
 
 			time.sleep(delay)
 			self.canvas.update()
-	
-	def mergeSort(
-		self,
-		base : int,
-		length : int,
-		delay : float = 0.050
-	):
+
+	def mergeSort(self, base : int, length : int, delay : float = 0.050):
 		if length > 1:
 			lenL = length // 2
 			lenR = length - lenL
@@ -202,5 +185,29 @@ class CanvasList:
 			self.mergeSort(baseR, lenR, delay)
 
 			self.mergeOver(baseL, lenL, baseR, lenR, delay)
-	
 
+	def heapify(self, iHead : int, heapSize : int, delay : float):
+		iLeft = 2 * iHead + 1
+		iRight = 2 * iHead + 2
+		iMax = iHead
+
+		if iLeft < heapSize and self.compare(iLeft, iHead, "grt"):
+			iMax = iLeft
+		if iRight < heapSize and self.compare(iRight, iMax, "grt"):
+			iMax = iRight
+
+		if iMax != iHead:
+			time.sleep(delay)
+			self.swap(iMax, iHead)
+
+	def buildHeap(self, length : int, delay : float):
+		for i in range(length // 2, -1, -1):
+			self.heapify(i, length, delay)
+
+	def heapSort(self, delay : float = 0.050):
+		self.buildHeap(len(self.array), delay)
+
+		for i in range(len(self.array) -1, 0, -1):
+			time.sleep(delay)
+			self.swap(0, i)
+			self.buildHeap(i, delay)
