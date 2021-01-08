@@ -6,46 +6,67 @@ class CanvasList:
 	def __init__(
 		self,
 		items : int,
-		dims : tuple,
 		color : str,
 		mode : str,
-		canvas : tk.Canvas
+		canvas : tk.Canvas,
+		**kwargs : dict
 	):
-		dw = dims[0] / items
-		dh = dims[1] / items
 		self.canvas = canvas
-		self.array = [
-			self.canvas.create_rectangle(
-				0 + i * dw, dims[1],
-				dw + i * dw, dims[1] - (i + 1) * dh,
-				fill = color, width = 0
-			) for i in range(items)
-		]
-		self.deltaWidth = dw
+		self.dims = (
+			int(
+				self.canvas.config()["width"][-1]
+			),
+			int(
+				self.canvas.config()["height"][-1]
+			)
+		)
 
-	def destroy(self):
-		self.canvas.delete("all")
-		self.array = []
+		dw = self.dims[0] / items
+		dh = self.dims[1] / items
+		self.dw = dw
+
+		if mode.upper() == "NORMAL":
+			self.array = [
+				self.canvas.create_rectangle(
+					i * dw, self.dims[1],
+					(i + 1) * dw, self.dims[1] - (i + 1) * dh,
+					fill = color, width = 0
+				) for i in range(items)
+			]
+		elif mode.upper() == "MERGE":
+			offset = kwargs["offset"]
+			x0 = dw * offset
+			self.array = [
+				self.canvas.create_rectangle(
+					x0 + i * dw, self.dims[1],
+					x0 + (i + 1) * dw, height
+				) for height in kwargs["heights"]
+			]
+
+	def __del__(self):
+		for i in self.array:
+			self.canvas.delete(i)
 
 	def value(self, i):
 		return self.canvas.coords(self.array[i])[1]
+
+	def xpos(self, i):
+		return self.canvas.coords(self.array[i])[0]
 
 	def swap(self, a, b):
 		if a == b:
 			return
 
-		A = self.array[a]
-		B = self.array[b]
-		xA = self.canvas.coords(A)[0]
-		xB = self.canvas.coords(B)[0]
+		xA = self.xpos(a) 
+		xB = self.xpos(b)
 		distance = abs(xA - xB)
 
 		if xA > xB:
-			self.canvas.move(A, -distance, 0)
-			self.canvas.move(B, distance, 0)
+			self.canvas.move(self.array[a], -distance, 0)
+			self.canvas.move(self.array[b], distance, 0)
 		else:
-			self.canvas.move(A, distance, 0)
-			self.canvas.move(B, -distance, 0)
+			self.canvas.move(self.array[a], distance, 0)
+			self.canvas.move(self.array[b], -distance, 0)
 		self.canvas.update()
 
 		temp = self.array[a]
@@ -69,6 +90,13 @@ class CanvasList:
 			return self.value(a) < self.value(b)
 		elif op.upper() == "LES":
 			return self.value(a) > self.value(b)
+
+	def copyOver(self, iSelf, source, iSource):
+		x = self.xpos(iSelf) # Get the x-position of the shape
+		self.canvas.delete(self.array[iSelf]) # Delete the old shape
+		self.array[iSelf] = self.canvas.create_rectangle(
+			x, self.dims[1], x + self.dw, source.value(iSource)
+		) # Make a new shape and store it's new ID in the spot of the old shape
 
 	def randomize(self):
 		for i in range(len(self.array)):
@@ -119,3 +147,4 @@ class CanvasList:
 			p = self.partitionRightPivot(low, high, delay, random)
 			self.quickSort(low, p - 1, delay)
 			self.quickSort(p + 1, high, delay)
+
