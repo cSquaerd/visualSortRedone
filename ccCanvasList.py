@@ -12,6 +12,7 @@ class CanvasList:
 		**kwargs : dict
 	):
 		self.canvas = canvas
+		self.color = color
 		self.dims = (
 			int(
 				self.canvas.config()["width"][-1]
@@ -34,14 +35,16 @@ class CanvasList:
 				) for i in range(items)
 			]
 		elif mode.upper() == "MERGE":
-			offset = kwargs["offset"]
-			x0 = dw * offset
+			x0 = kwargs["offset"]
 			self.array = [
 				self.canvas.create_rectangle(
 					x0 + i * dw, self.dims[1],
-					x0 + (i + 1) * dw, height
-				) for height in kwargs["heights"]
+					x0 + (i + 1) * dw, kwargs["heights"][i],
+					fill = color, width = 0
+				) for i in range(len(kwargs["heights"]))
 			]
+		#	for r in self.array:
+		#		self.canvas.tag_lower(r)
 
 	def __del__(self):
 		for i in self.array:
@@ -95,7 +98,8 @@ class CanvasList:
 		x = self.xpos(iSelf) # Get the x-position of the shape
 		self.canvas.delete(self.array[iSelf]) # Delete the old shape
 		self.array[iSelf] = self.canvas.create_rectangle(
-			x, self.dims[1], x + self.dw, source.value(iSource)
+			x, self.dims[1], x + self.dw, source.value(iSource),
+			fill = self.color, width = 0
 		) # Make a new shape and store it's new ID in the spot of the old shape
 
 	def randomize(self):
@@ -147,4 +151,56 @@ class CanvasList:
 			p = self.partitionRightPivot(low, high, delay, random)
 			self.quickSort(low, p - 1, delay)
 			self.quickSort(p + 1, high, delay)
+
+	def mergeOver(
+		self,
+		baseL : int,
+		lenL : int, 
+		baseR : int,
+		lenR : int,
+		delay : float = 0.050
+	):
+		source = CanvasList(
+			len(self.array),
+			"red",
+			"MERGE",
+			self.canvas,
+			offset = self.xpos(baseL),
+			heights = [self.value(i) for i in range(baseL, baseL + lenL + lenR)]
+		)
+	#	print("Source", source.array)
+		sourceL = 0
+		sourceR = lenL
+
+		for i in range(baseL, baseL + lenL + lenR):
+		#	print("\t", end = '')
+		#	print(i, sourceL, sourceR)
+			if sourceR == lenL + lenR or (sourceL < lenL and source.compare(sourceL, sourceR, "les")):
+				self.copyOver(i, source, sourceL)
+				sourceL += 1
+			else:
+				self.copyOver(i, source, sourceR)
+				sourceR += 1
+
+			time.sleep(delay)
+			self.canvas.update()
+	
+	def mergeSort(
+		self,
+		base : int,
+		length : int,
+		delay : float = 0.050
+	):
+		if length > 1:
+			lenL = length // 2
+			lenR = length - lenL
+			baseL = base
+			baseR = base + lenL
+		#	print(baseL, lenL, baseR, lenR)
+
+			self.mergeSort(baseL, lenL, delay)
+			self.mergeSort(baseR, lenR, delay)
+
+			self.mergeOver(baseL, lenL, baseR, lenR, delay)
+	
 
