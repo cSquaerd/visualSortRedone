@@ -30,6 +30,14 @@ class CanvasList:
 					fill = color, width = 0
 				) for i in range(items)
 			]
+		elif mode.upper() == "RANDOM":
+			self.array = [
+				self.canvas.create_rectangle(
+					i * dw, self.dims[1],
+					(i + 1) * dw, self.dims[1] - rnd.randint(1, items) * dh,
+					fill = color, width = 0
+				) for i in range(items)
+			]
 		elif mode.upper() == "MERGE":
 			x0 = kwargs["offset"]
 			self.array = [
