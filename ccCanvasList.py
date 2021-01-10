@@ -106,6 +106,16 @@ class CanvasList:
 			fill = self.color, width = 0
 		) # Make a new shape and store it's new ID in the spot of the old shape
 
+	def write(self, index : int, value : float, delay : float):
+		x = self.xpos(index)
+		self.canvas.delete(self.array[index])
+		time.sleep(delay)
+		self.array[index] = self.canvas.create_rectangle(
+			x, self.dims[1], x + self.dw, value,
+			fill = self.color, width = 0
+		)
+		self.canvas.update()
+
 	def randomize(self):
 		for i in range(len(self.array)):
 			self.swap(i, rnd.randint(0, len(self.array) - 1))
@@ -219,7 +229,7 @@ class CanvasList:
 			time.sleep(delay)
 			self.swap(0, i)
 			self.buildHeap(i, delay)
-	
+
 	def insertionSort(self, delay : float):
 		for i in range(1, len(self.array)):
 			j = i - 1
@@ -228,13 +238,19 @@ class CanvasList:
 				self.swap(j, j + 1)
 				j -= 1
 
-#	def shellSort(self, delay : float):
-#		gaps = [1]
-#		k = 2
-#		while gaps[0] < len(self.array):
-#			gaps.insert(0, 2 ** k - 1)
-#			k += 1
+	def shellSort(self, delay : float):
+		gaps = [1]
+		k = 2
+		while gaps[0] < len(self.array):
+			gaps.insert(0, 2 ** k - 1)
+			k += 1
 
-#		for g in gaps:
-#			for i in range(g, len(self.array)):
+		for g in gaps:
+			for i in range(g, len(self.array)):
+				temp = self.value(i)
+				j = i
+				while j >= g and self.value(j - g) < temp: # Recall, direct value comparisons must be done backwards
+					self.write(j, self.value(j - g), delay)
+					j -= g
 
+				self.write(j, temp, delay)

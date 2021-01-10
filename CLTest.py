@@ -16,6 +16,24 @@ print("Done! Press enter to continue...")
 input()
 
 del myList
+myList = cl.CanvasList(elements, "navy", "RANDOM", myCanvas)
+print("Randomizing...")
+myList.randomize()
+print("Insertion Sorting...")
+myList.insertionSort(0.010)
+print("Done! Press enter to continue...")
+input()
+
+del myList
+myList = cl.CanvasList(elements, "purple", "RANDOM", myCanvas)
+print("Randomizing...")
+myList.randomize()
+print("Shell Sorting...")
+myList.shellSort(0.010)
+print("Done! Press enter to continue...")
+input()
+
+del myList
 myList = cl.CanvasList(elements, "gray", "RANDOM", myCanvas)
 print("Randomizing...")
 myList.randomize()
