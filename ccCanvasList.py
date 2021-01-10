@@ -219,3 +219,22 @@ class CanvasList:
 			time.sleep(delay)
 			self.swap(0, i)
 			self.buildHeap(i, delay)
+	
+	def insertionSort(self, delay : float):
+		for i in range(1, len(self.array)):
+			j = i - 1
+			while j >= 0 and self.compare(j, j + 1, "grt"):
+				time.sleep(delay)
+				self.swap(j, j + 1)
+				j -= 1
+
+#	def shellSort(self, delay : float):
+#		gaps = [1]
+#		k = 2
+#		while gaps[0] < len(self.array):
+#			gaps.insert(0, 2 ** k - 1)
+#			k += 1
+
+#		for g in gaps:
+#			for i in range(g, len(self.array)):
+
