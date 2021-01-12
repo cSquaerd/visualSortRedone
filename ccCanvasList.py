@@ -21,23 +21,10 @@ class CanvasList:
 		dw = self.dims[0] / items
 		dh = self.dims[1] / items
 		self.dw = dw
+		self.dh = dh
 
-		if mode.upper() == "NORMAL":
-			self.array = [
-				self.canvas.create_rectangle(
-					i * dw, self.dims[1],
-					(i + 1) * dw, self.dims[1] - (i + 1) * dh,
-					fill = color, width = 0
-				) for i in range(items)
-			]
-		elif mode.upper() == "RANDOM":
-			self.array = [
-				self.canvas.create_rectangle(
-					i * dw, self.dims[1],
-					(i + 1) * dw, self.dims[1] - rnd.randint(1, items) * dh,
-					fill = color, width = 0
-				) for i in range(items)
-			]
+		if mode.upper() in ("NORMAL", "RANDOM"):
+			self.changeElements(items, color, mode, True)
 		elif mode.upper() == "MERGE":
 			x0 = kwargs["offset"]
 			self.array = [
@@ -51,8 +38,43 @@ class CanvasList:
 		#		self.canvas.tag_lower(r)
 
 	def __del__(self):
-		for i in self.array:
-			self.canvas.delete(i)
+		try:
+			for i in self.array:
+				self.canvas.delete(i)
+		except tk.TclError: # Happens if this is deleted after a root tk.Tk window is deleted first
+			pass
+
+	def changeElements(
+		self, newSize : int,
+		color : str, mode : str,
+		constructing = False
+	):
+		if not constructing:
+			for i in self.array:
+				self.canvas.delete(i)
+			dw = self.dims[0] / newSize
+			dh = self.dims[1] / newSize
+			self.dw = dw
+			self.dh = dh
+		else:
+			dw = self.dw
+			dh = self.dh
+		if mode.upper() == "NORMAL":
+			self.array = [
+				self.canvas.create_rectangle(
+					i * dw, self.dims[1],
+					(i + 1) * dw, self.dims[1] - (i + 1) * dh,
+					fill = color, width = 0
+				) for i in range(newSize)
+			]
+		elif mode.upper() == "RANDOM":
+			self.array = [
+				self.canvas.create_rectangle(
+					i * dw, self.dims[1],
+					(i + 1) * dw, self.dims[1] - rnd.randint(1, newSize) * dh,
+					fill = color, width = 0
+				) for i in range(newSize)
+			]
 
 	def value(self, i):
 		return self.canvas.coords(self.array[i])[1]
@@ -120,6 +142,11 @@ class CanvasList:
 		for i in range(len(self.array)):
 			self.swap(i, rnd.randint(0, len(self.array) - 1))
 
+	def reverse(self, delay : float = 0.0):
+		for i in range(len(self.array) // 2) :
+			time.sleep(delay)
+			self.swap(i, len(self.array) - 1 - i)
+
 	def bubbleSort(self, delay : float = 0.050):
 		length = len(self.array)
 		for i in range(length):
@@ -153,7 +180,7 @@ class CanvasList:
 
 	def quickSort(
 		self, low : int, high : int,
-		delay : float = 0.050,random : bool = False
+		delay : float = 0.050, random : bool = False
 	):
 		if low < high:
 			p = self.partitionRightPivot(low, high, delay, random)
